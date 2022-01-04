@@ -16,6 +16,8 @@ target 'AppsScanBarCode' do
 
   pod 'react-native-camera', :path => '../node_modules/react-native-camera'
 
+  pod 'RNSound', :path => '../node_modules/react-native-sound'
+
   target 'AppsScanBarCodeTests' do
     inherit! :complete
     # Pods for testing

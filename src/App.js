@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
   SafeAreaView,
   Switch,
@@ -8,52 +8,99 @@ import {
   View,
   TextInput,
   FlatList,
+  Alert,
 } from 'react-native';
-import MaterialCommunityIcons from 'react-native-vector-icons/Ionicons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import {RNCamera} from 'react-native-camera';
+import glugSfx from './beep.mp3';
+import Sound from 'react-native-sound';
 const App = () => {
   const [isCamera, setIsCamera] = useState(false);
   const [input, setInput] = useState('0000000521357002140580');
   const toggleSwitch = () => setIsCamera(!isCamera);
   const [listGWNW, setListGWNW] = useState([]);
-
   const [grandGW, setGrandGW] = useState(0);
   const [grandNW, setGrandNW] = useState(0);
-  let numOr0 = n => (isNaN(n) ? 0 : n);
+  const [barcode, setBarcode] = useState('');
+  const inputRef = useRef(null);
+  const soundRef = useRef(
+    new Sound(require('./beep.mp3'), Sound.MAIN_BUNDLE, error => {
+      if (error) {
+        console.error('error', error);
+      }
+    }),
+  );
 
   const prosesInput = () => {
     if (input.length == 22 && !isNaN(input)) {
-      let gwInput = input.substring(18, 24) / 100;
-      let nwInput = input.substring(14, 18) / 100;
-      let sumGWNW = gwInput + nwInput;
-      let gw = parseFloat(sumGWNW).toFixed(2);
-      let nw = parseFloat(nwInput).toFixed(2);
-      let data = {
-        gw: gw,
-        nw: nw,
-        sn: input,
-      };
-      let dataGW = 0.0;
-      let dataNW = 0.0;
-      let listData = [data, ...listGWNW];
-      listData.map(item => {
-        console.log(parseFloat(item.gw));
-        dataGW += parseFloat(item.gw);
-        dataNW += parseFloat(item.nw);
-      });
-      setGrandGW(parseFloat(dataGW).toFixed(2));
-      setGrandNW(parseFloat(dataNW).toFixed(2));
-      setListGWNW(listData);
-      setInput('');
+      let double = false;
+      if (listGWNW.length > 0) {
+        listGWNW.forEach(item => {
+          if (item.sn == input) {
+            Alert.alert('Double Scan!!', 'Silakan scan Barcode lain', [
+              {
+                text: 'ok',
+                onPress: () => {
+                  setBarcode('');
+                  setInput('');
+                },
+              },
+            ]);
+            setInput('');
+            double = true;
+            return;
+          }
+        });
+      }
+      if (!double) {
+        let gwInput = input.substring(18, 24) / 100;
+        let nwInput = input.substring(14, 18) / 100;
+        let sumGWNW = gwInput + nwInput;
+        let gw = parseFloat(sumGWNW).toFixed(2);
+        let nw = parseFloat(nwInput).toFixed(2);
+        let data = {
+          gw: gw,
+          nw: nw,
+          sn: input,
+        };
+        let dataGW = 0.0;
+        let dataNW = 0.0;
+        let listData = [data, ...listGWNW];
+        listData.map(item => {
+          dataGW += parseFloat(item.gw);
+          dataNW += parseFloat(item.nw);
+        });
+        setGrandGW(parseFloat(dataGW).toFixed(2));
+        setGrandNW(parseFloat(dataNW).toFixed(2));
+        setListGWNW(listData);
+        if (!isCamera) {
+          inputRef.current.focus();
+        }
+      }
     }
+    setInput('');
   };
   const onBarCodeRead = e => {
-    console.log(e.data);
     setInput(e.data);
+  };
+  const clearData = () => {
+    Alert.alert('Menghapus data.', 'apa anda ingin menghapus data scan?', [
+      {
+        text: 'ok',
+        onPress: () => {
+          setListGWNW('');
+          setGrandNW('0');
+          setGrandGW('0');
+        },
+      },
+      {
+        text: 'Batal',
+        onPress: () => {},
+      },
+    ]);
   };
   useEffect(() => {
     prosesInput();
-    return () => {};
   }, [input]);
   return (
     <SafeAreaView style={{flex: 1, backgroundColor: 'white'}}>
@@ -62,25 +109,39 @@ const App = () => {
         <Text style={styles.header}>GW/NW</Text>
         <View style={styles.menu}>
           <Text style={styles.summary}>
-            {grandGW}/{grandNW} {listGWNW.length}
+            {grandGW}/{grandNW} ({listGWNW.length})
           </Text>
           <View style={styles.switcher}>
-            <MaterialCommunityIcons name="md-scan-circle" size={24} />
-            <Switch
-              trackColor={{false: '#767577', true: '#81b0ff'}}
-              thumbColor={isCamera ? '#f5dd4b' : '#f4f3f4'}
-              ios_backgroundColor="#3e3e3e"
-              onValueChange={toggleSwitch}
-              value={isCamera}
+            <Ionicons
+              name="md-scan-circle"
+              size={35}
+              onPress={() => {
+                setIsCamera(false);
+              }}
+              color={!isCamera ? 'blue' : 'gray'}
             />
-            <MaterialCommunityIcons name="camera" size={24} />
+
+            <Ionicons
+              name="camera"
+              size={35}
+              onPress={() => {
+                setIsCamera(true);
+              }}
+              color={isCamera ? 'blue' : 'gray'}
+            />
+            <Ionicons
+              name="trash"
+              color={'red'}
+              onPress={() => clearData()}
+              size={35}
+            />
           </View>
         </View>
-        <View style={{height: 200, flex: 1}}>
+        <View style={{height: 200, flex: 1, paddingVertical: 8}}>
           {isCamera && (
             <View
               style={{
-                marginVertical: 140,
+                marginVertical: 150,
                 height: 200,
                 flex: 1,
                 flexDirection: 'column',
@@ -105,8 +166,12 @@ const App = () => {
                   buttonPositive: 'Ok',
                   buttonNegative: 'Cancel',
                 }}
-                onBarCodeRead={e => {
-                  onBarCodeRead(e);
+                onBarCodeRead={async e => {
+                  if (barcode != e.data) {
+                    soundRef.current.play();
+                    setBarcode(e.data);
+                    setInput(e.data);
+                  }
                 }}>
                 <View
                   style={{
@@ -125,9 +190,19 @@ const App = () => {
                       height: 200,
                       backgroundColor: 'transparent',
                       borderColor: 'white',
-                      borderWidth: 1,
-                    }}
-                  />
+                      borderWidth: 0.5,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}>
+                    <View
+                      style={{
+                        width: 250,
+                        height: 1,
+                        backgroundColor: 'transparent',
+                        borderColor: 'red',
+                        borderWidth: 1,
+                      }}></View>
+                  </View>
                 </View>
               </RNCamera>
             </View>
@@ -135,6 +210,7 @@ const App = () => {
           {!isCamera && (
             <View>
               <TextInput
+                ref={inputRef}
                 value={input}
                 placeholder="klik disini untuk hardware Scanner "
                 onChangeText={text => {
@@ -176,7 +252,7 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   item: {
-    padding: 5,
+    padding: 2,
   },
   preview: {
     width: '100%',

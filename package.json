@@ -7,13 +7,20 @@
     "ios": "react-native run-ios",
     "start": "react-native start",
     "test": "jest",
+    "release-build": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/build/intermediates/res/merged/release/ && rm -rf android/app/src/main/res/drawable-* && rm -rf android/app/src/main/res/raw/* ",
+    "build": "react-native bundle --platform android  --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/ && rm -rf ./android/app/src/main/res/drawable-mdpi/ && rm -rf ./android/app/src/main/res/raw/",
+    "bundleRelease": "yarn release-build && cd android && gradlew bundleRelease",
+    "APKRelease": "yarn release-build && cd android && gradlew assembleRelease",
+    "debug-build": "yarn release-build && cd android && gradlew assembleDebug ",
     "lint": "eslint ."
   },
   "dependencies": {
     "react": "17.0.2",
     "react-native": "0.66.4",
     "react-native-camera": "^4.2.1",
-    "react-native-vector-icons": "^9.0.0"
+    "react-native-sound": "^0.11.1",
+    "react-native-vector-icons": "^9.0.0",
+    "use-sound": "^4.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
