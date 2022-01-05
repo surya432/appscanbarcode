@@ -1,7 +1,6 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {
   SafeAreaView,
-  Switch,
   StatusBar,
   StyleSheet,
   Text,
@@ -44,7 +43,7 @@ const App = () => {
       if (listGWNW.length > 0) {
         listGWNW.forEach(item => {
           if (item.sn == input) {
-            Vibration.vibrate(3 * ONE_SECOND_IN_MS);
+            Vibration.vibrate(2 * ONE_SECOND_IN_MS);
             soundRefError.current.play();
             Alert.alert('Double Scan!!', 'Silakan scan Barcode lain', [
               {
@@ -61,7 +60,6 @@ const App = () => {
         });
       }
       if (!double) {
-        soundRef.current.play();
         let gwInput = input.substring(18, 24) / 100;
         let nwInput = input.substring(14, 18) / 100;
         let sumGWNW = gwInput + nwInput;
@@ -83,7 +81,7 @@ const App = () => {
         setGrandNW(parseFloat(dataNW).toFixed(2));
         setListGWNW(listData);
         setInput('');
-        if (!isCamera) {
+        if (isCamera == false) {
           inputRef.current.focus();
         }
       }
@@ -92,7 +90,7 @@ const App = () => {
   const clearData = () => {
     Alert.alert('Menghapus data.', 'apa anda ingin menghapus data scan?', [
       {
-        text: 'ok',
+        text: 'OK',
         onPress: () => {
           setListGWNW('');
           setGrandNW('0');
@@ -174,6 +172,7 @@ const App = () => {
                 }}
                 onBarCodeRead={async e => {
                   if (barcode != e.data) {
+                    soundRef.current.play();
                     setBarcode(e.data);
                     setInput(e.data);
                   }
@@ -216,8 +215,15 @@ const App = () => {
             <View>
               <TextInput
                 ref={inputRef}
+                autoFocus={true}
+                focusable={true}
                 value={input}
-                placeholder="klik disini untuk hardware Scanner "
+                returnKeyType="default"
+                onSubmitEditing={() => {
+                  inputRef.current.focus();
+                }}
+                blurOnSubmit={false}
+                placeholder="klik disini untuk hardware Scanner"
                 onChangeText={text => {
                   setInput(text);
                 }}
