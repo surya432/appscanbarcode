@@ -11,6 +11,7 @@
     "build": "react-native bundle --platform android  --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/ && rm -rf ./android/app/src/main/res/drawable-mdpi/ && rm -rf ./android/app/src/main/res/raw/",
     "bundleRelease": "yarn release-build && cd android && gradlew bundleRelease",
     "APKRelease": "yarn release-build && cd android && gradlew assembleRelease",
+    "APKReleaseLinux": "yarn release-build && cd android && ./gradlew assembleRelease",
     "debug-build": "yarn release-build && cd android && gradlew assembleDebug ",
     "lint": "eslint ."
   },
