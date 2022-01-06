@@ -88,6 +88,7 @@ const App = () => {
         }
       }
     }
+    setIsReadBarcode(false);
   };
   const clearData = () => {
     Alert.alert('Menghapus data.', 'apa anda ingin menghapus data scan?', [
@@ -175,9 +176,9 @@ const App = () => {
                 }}
                 onBarCodeRead={async e => {
                   if (!IsReadBarcode) {
-                    setInput(e.data);
                     soundRef.current.play();
                     setIsReadBarcode(true);
+                    setInput(e.data);
                   }
                 }}>
                 <View
