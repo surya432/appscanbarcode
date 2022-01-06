@@ -43,11 +43,11 @@ const App = () => {
       if (listGWNW.length > 0) {
         listGWNW.forEach(item => {
           if (item.sn == input) {
-            Vibration.vibrate(2 * ONE_SECOND_IN_MS);
+            Vibration.vibrate(1 * ONE_SECOND_IN_MS);
             soundRefError.current.play();
             Alert.alert('Double Scan!!', 'Silakan scan Barcode lain', [
               {
-                text: 'ok',
+                text: 'OK',
                 onPress: () => {
                   setBarcode('');
                   setInput('');
@@ -171,11 +171,11 @@ const App = () => {
                   buttonNegative: 'Cancel',
                 }}
                 onBarCodeRead={async e => {
-                  if (barcode != e.data) {
-                    soundRef.current.play();
-                    setBarcode(e.data);
-                    setInput(e.data);
-                  }
+                  // if (barcode != e.data) {
+                  soundRef.current.play();
+                  setBarcode(e.data);
+                  setInput(e.data);
+                  // }
                 }}>
                 <View
                   style={{
@@ -205,7 +205,8 @@ const App = () => {
                         backgroundColor: 'transparent',
                         borderColor: 'red',
                         borderWidth: 1,
-                      }}></View>
+                      }}
+                    />
                   </View>
                 </View>
               </RNCamera>
