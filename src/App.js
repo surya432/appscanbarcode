@@ -13,14 +13,14 @@ import {
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {RNCamera} from 'react-native-camera';
 import Sound from 'react-native-sound';
+const ONE_SECOND_IN_MS = 1000;
 const App = () => {
-  const ONE_SECOND_IN_MS = 1000;
   const [isCamera, setIsCamera] = useState(false);
   const [input, setInput] = useState(''); //0000000521357002140580
   const [listGWNW, setListGWNW] = useState([]);
   const [grandGW, setGrandGW] = useState(0);
   const [grandNW, setGrandNW] = useState(0);
-  const [barcode, setBarcode] = useState('');
+  const [IsReadBarcode, setIsReadBarcode] = useState(false);
   const inputRef = useRef(null);
   const soundRef = useRef(
     new Sound(require('./beep.mp3'), Sound.MAIN_BUNDLE, error => {
@@ -49,7 +49,7 @@ const App = () => {
               {
                 text: 'OK',
                 onPress: () => {
-                  setBarcode('');
+                  setIsReadBarcode(false);
                   setInput('');
                 },
               },
@@ -83,6 +83,8 @@ const App = () => {
         setInput('');
         if (isCamera == false) {
           inputRef.current.focus();
+        } else {
+          setIsReadBarcode(false);
         }
       }
     }
@@ -155,7 +157,8 @@ const App = () => {
                   flex: 1,
                   justifyContent: 'flex-start',
                 }}
-                autoFocus
+                defaultTouchToFocus
+                mirrorImage={false}
                 type={RNCamera.Constants.Type.back}
                 flashMode={RNCamera.Constants.FlashMode.on}
                 androidCameraPermissionOptions={{
@@ -171,11 +174,11 @@ const App = () => {
                   buttonNegative: 'Cancel',
                 }}
                 onBarCodeRead={async e => {
-                  // if (barcode != e.data) {
-                  soundRef.current.play();
-                  setBarcode(e.data);
-                  setInput(e.data);
-                  // }
+                  if (!IsReadBarcode) {
+                    setInput(e.data);
+                    soundRef.current.play();
+                    setIsReadBarcode(true);
+                  }
                 }}>
                 <View
                   style={{
